@@ -40,7 +40,29 @@ class UserController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified resource in storage (PUT - actualización completa).
+     */
+    public function replace(Request $request, User $user)
+    {
+        // Validación completa - todos los campos son requeridos excepto los nullable
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'lastname' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
+            'email' => ['required', 'email', 'unique:users,email,' . $user->id],
+            'hiring_date' => ['nullable', 'date'],
+            'dui' => ['nullable', 'string', 'regex:/^\d{8}-\d$/', 'unique:users,dui,' . $user->id],
+            'phone_number' => ['nullable', 'string', 'regex:/^[0-9\-\+\(\)\s]+$/'],
+            'birth_date' => ['nullable', 'date', 'before:today'],
+        ]);
+        
+        $user->update($validated);
+        
+        return UserResource::make($user);
+    }
+
+    /**
+     * Update the specified resource in storage (PATCH - actualización parcial).
      */
     public function update(Request $request, User $user)
     {
